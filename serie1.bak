@@ -1,0 +1,34 @@
+#lang racket
+(define make-named-strategy
+  (lambda (strategy name author)
+    (lambda (message)
+      (cond ((equal? message "name") name)
+            ((equal? message "author") author)
+            ((list? message) (strategy message))
+            (else (violation "bad message for strategy"))))))
+(define PTF
+  (make-named-strategy (lambda (x) "c")
+                       "Poor Trusting Fool"
+                       "I'm dead"))
+
+(define DA
+  (make-named-strategy (lambda (x) "d")
+                       "Defect Always"
+                       "You will be dead soon"))
+
+(define grudger-intern
+  (lambda ()
+    (letrec ((cooperate? #t))
+      (lambda (list)
+        (cond ((not (cooperate?)) "d")
+              ((empty? list) "c")
+              ((equal? (get-last-enemy-move list) "d")
+               (begin (set! cooperate? #f)
+                      "d"))
+              (else "c"))))))
+
+(define get-last-enemy-move
+  (lambda (list)
+    (cond ((empty? list) (violation "bad List - its empty!"))
+          ((empty? (rest list)) (first (rest (first list))))
+          (else (get-last-enemy-move (rest list))))))
